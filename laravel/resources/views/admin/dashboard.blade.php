@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Trang chủ')
+@section('title', 'Trang quản trị')
 @section('content')
     <div class="row">
         <div class="col">
