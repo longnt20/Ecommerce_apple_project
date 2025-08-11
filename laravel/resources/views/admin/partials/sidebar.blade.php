@@ -4,19 +4,19 @@
         <!-- Dark Logo-->
         <a href="index.html" class="logo logo-dark">
             <span class="logo-sm">
-                <img src="assets/images/logo-sm.png" alt="" height="22">
+                <img src="{{asset('assets/images/logo-sm.png')}}" alt="" height="22">
             </span>
             <span class="logo-lg">
-                <img src="assets/images/logo-dark.png" alt="" height="17">
+                <img src="{{asset('assets/images/logo-dark.png')}}" alt="" height="17">
             </span>
         </a>
         <!-- Light Logo-->
         <a href="index.html" class="logo logo-light">
             <span class="logo-sm">
-                <img src="assets/images/logo-sm.png" alt="" height="22">
+                <img src="{{asset('assets/images/logo-sm.png')}}" alt="" height="22">
             </span>
             <span class="logo-lg">
-                <img src="assets/images/logo-image.png" alt="" height="60">
+                <img src="{{asset('assets/images/logo-white.png')}}" alt="" height="60">
             </span>
         </a>
         <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover"
@@ -40,14 +40,16 @@
                     <div class="collapse menu-dropdown" id="sidebarDashboards">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="dashboard-analytics.html" class="nav-link" data-key="t-analytics"> Analytics
+                                <a href="{{route('admin.categories.index')}}" class="nav-link" data-key="t-analytics"> Danh sách danh mục
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="dashboard-crm.html" class="nav-link" data-key="t-crm"> CRM </a>
+                                <a href="{{route('admin.categories.create')}}" class="nav-link" data-key="t-analytics"> Thêm mới danh mục
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a href="index.html" class="nav-link" data-key="t-ecommerce"> Ecommerce </a>
+                                <a href="{{route('admin.categories.trash')}}" class="nav-link" data-key="t-analytics"> Danh sách danh mục đã xóa
+                                </a>
                             </li>
                         </ul>
                     </div>
