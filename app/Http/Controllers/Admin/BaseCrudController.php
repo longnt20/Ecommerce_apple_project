@@ -52,11 +52,9 @@ abstract class BaseCrudController
 
     public function update($id)
     {
-        // Resolve FormRequest update
         $request = app($this->updateformRequestClass);
         $data = $request->validated();
 
-        // Nếu có method xử lý dữ liệu trước khi update
         if (method_exists($this, 'beforeUpdate')) {
             $data = $this->beforeUpdate($request, $data);
         }

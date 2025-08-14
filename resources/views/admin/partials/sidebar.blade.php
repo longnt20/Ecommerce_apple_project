@@ -62,58 +62,16 @@
                     <div class="collapse menu-dropdown" id="sidebarApps">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="#sidebarCalendar" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarCalendar" data-key="t-calender">
-                                    Calendar
+                                <a href="{{route('admin.products.index')}}" class="nav-link" data-key="t-analytics"> Danh sách sản phẩm
                                 </a>
-                                <div class="collapse menu-dropdown" id="sidebarCalendar">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="apps-calendar.html" class="nav-link" data-key="t-main-calender">
-                                                Main Calender </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="apps-calendar-month-grid.html" class="nav-link"
-                                                data-key="t-month-grid"> Month Grid </a>
-                                        </li>
-                                    </ul>
-                                </div>
                             </li>
                             <li class="nav-item">
-                                <a href="apps-chat.html" class="nav-link" data-key="t-chat"> Chat </a>
+                                <a href="{{route('admin.products.create')}}" class="nav-link" data-key="t-analytics"> Thêm mới sản phẩm
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#sidebarEmail" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarEmail" data-key="t-email">
-                                    Email
+                                <a href="{{route('admin.products.trash')}}" class="nav-link" data-key="t-analytics"> Danh sách sản phẩm đã xóa
                                 </a>
-                                <div class="collapse menu-dropdown" id="sidebarEmail">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="apps-mailbox.html" class="nav-link" data-key="t-mailbox">
-                                                Mailbox </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="#sidebaremailTemplates" class="nav-link"
-                                                data-bs-toggle="collapse" role="button" aria-expanded="false"
-                                                aria-controls="sidebaremailTemplates" data-key="t-email-templates">
-                                                Email Templates
-                                            </a>
-                                            <div class="collapse menu-dropdown" id="sidebaremailTemplates">
-                                                <ul class="nav nav-sm flex-column">
-                                                    <li class="nav-item">
-                                                        <a href="apps-email-basic.html" class="nav-link"
-                                                            data-key="t-basic-action"> Basic Action </a>
-                                                    </li>
-                                                    <li class="nav-item">
-                                                        <a href="apps-email-ecommerce.html" class="nav-link"
-                                                            data-key="t-ecommerce-action"> Ecommerce Action </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
                             </li>
                         </ul>
                     </div>
