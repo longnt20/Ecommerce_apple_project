@@ -40,6 +40,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->as('admin.')->group(fu
         Route::get('/create', [ProductController::class, 'create'])->name('create');
         Route::get('/{id}', [ProductController::class, 'show'])->name('show');
         Route::post('/store', [ProductController::class, 'store'])->name('store');
+        Route::post('/upload', [ProductController::class, 'uploadTemp'])->name('upload');
         Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('edit');
         Route::put('/{id}', [ProductController::class, 'update'])->name('update');
         Route::delete('/{id}', [ProductController::class, 'destroy'])->name('destroy');

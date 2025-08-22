@@ -20,12 +20,22 @@
     <div class="card">
         <div class="card-header">
             <h4 class="card-title mb-0">Thêm mới sản phẩm</h4>
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div><!-- end card header -->
         <div class="card-body">
-            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
+            <form id="product-form" method="POST" action="{{ route('admin.products.store') }}"
+                enctype="multipart/form-data">
                 @csrf
                 <div class="row">
-                    <div class="col-lg-8">
+                    <div class="col-lg-7">
                         <div class="card" style="border-width: 2px;">
                             <div class="card-header" style="background-color:aliceblue">
                                 <h5 class="card-title mb-0">Thông tin chung</h5>
@@ -34,24 +44,62 @@
                                 <div class="mb-3">
                                     <label class="form-label" for="product-title-input">Tên sản phẩm</label>
                                     <input type="text" class="form-control" name="name" id="product-title-input"
-                                        value="" placeholder="Nhập tên sản phẩm">
+                                        value="{{ old('name') }}" placeholder="Nhập tên sản phẩm">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label" for="product-title-input">Giá mặc định</label>
                                     <input type="text" class="form-control" name="default_price" id="product-title-input"
-                                        value="" placeholder="Nhập giá sản phẩm">
+                                        value="{{ old('default_price') }}" placeholder="Nhập giá sản phẩm">
                                 </div>
                                 <div>
                                     <label>Mô tả sản phẩm</label>
-                                    <textarea name="description" id="description-hidden" hidden>{{ old('description') }}</textarea>
-                                    <div id="ckeditor-classic">
-                                         {!! old('description') !!}
-                                    </div>
+                                    <textarea name="description" id="description" hidden>{{ old('description') }}</textarea>
                                 </div>
                             </div>
                         </div>
                         <!-- end card -->
+                        <div class="card" style="border-width: 2px;">
+                            <div class="card-header" style="background-color:aliceblue">
+                                <h5 class="card-title mb-0">Thông số kỹ thuật</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <table class="table table-bordered" id="spec-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 40%">Tên thông số</th>
+                                                <th style="width: 40%">Giá trị</th>
+                                                <th style="width: 20%">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" name="specs[0][name]" class="form-control">
+                                                </td>
+                                                <td><input type="text" name="specs[0][value]" class="form-control">
+                                                </td>
+                                                <td>
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm btn-remove">Xóa</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" id="add-spec" class="btn btn-primary btn-sm">+ Thêm thông
+                                        số</button>
+                                </div>
 
+
+                            </div>
+                            <!-- end card body -->
+                        </div>
+
+
+                        <!-- end card -->
+                    </div>
+                    <!-- end col -->
+
+                    <div class="col-lg-5">
                         <div class="card" style="border-width: 2px;">
                             <div class="card-header" style="background-color:aliceblue">
                                 <h5 class="card-title mb-0">Ảnh sản phẩm</h5>
@@ -71,8 +119,8 @@
                                                         </div>
                                                     </div>
                                                 </label>
-                                                <input class="form-control d-none" value="" id="product-image-input"
-                                                    type="file" name="thumbnail"
+                                                <input class="form-control d-none" value=""
+                                                    id="product-image-input" type="file" name="thumbnail"
                                                     accept="image/png, image/gif, image/jpeg">
                                             </div>
                                             <div class="avatar-lg">
@@ -85,59 +133,22 @@
                                 </div>
                                 <div>
                                     <h5 class="fs-14 mb-1">Bộ sưu tập ảnh</h5>
-                                    <div class="dropzone">
-                                        <div class="fallback">
-                                            <input name="gallery[]" type="file" multiple="multiple">
-                                        </div>
-                                        <div class="dz-message needsclick">
-                                            <div class="mb-3">
-                                                <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
-                                            </div>
-
-                                            <h5>Drop files here or click to upload.</h5>
-                                        </div>
+                                    <input class="form-control" type="file" id="gallery" name="gallery[]" multiple>
+                                    <!-- Nút bấm giống Dropzone -->
+                                    <div id="dropzone-mock" class="border border-2 rounded p-4 text-center"
+                                        style="cursor: pointer;">
+                                        <i class="ri-upload-cloud-2-fill display-4 text-muted"></i>
+                                        <h6>Kéo & thả hoặc bấm để chọn ảnh</h6>
                                     </div>
 
-                                    <ul class="list-unstyled mb-0" id="dropzone-preview">
-                                        <li class="mt-2" id="dropzone-preview-list">
-                                            <!-- This is used as the file preview template -->
-                                            <div class="border rounded">
-                                                <div class="d-flex p-2">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="avatar-sm bg-light rounded">
-                                                            <img data-dz-thumbnail class="img-fluid rounded d-block"
-                                                                src="#" alt="Product-Image" />
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="pt-1">
-                                                            <h5 class="fs-14 mb-1" data-dz-name>&nbsp;</h5>
-                                                            <p class="fs-13 text-muted mb-0" data-dz-size></p>
-                                                            <strong class="error text-danger"
-                                                                data-dz-errormessage></strong>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-shrink-0 ms-3">
-                                                        <button data-dz-remove class="btn btn-sm btn-danger">Xóa</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <!-- end dropzon-preview -->
-
+                                    <!-- Preview ảnh -->
+                                    <div id="preview-container" class="d-flex flex-wrap mt-3 gap-2"></div>
                                 </div>
 
                             </div>
 
                         </div>
-
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-
-                    <div class="col-lg-4">
-                        <div class="card" style="border-width: 2px;">
+                                                <div class="card" style="border-width: 2px;">
                             <div class="card-header" style="background-color:aliceblue">
                                 <h5 class="card-title mb-0">Xuất bản</h5>
                             </div>
@@ -196,8 +207,102 @@
                 <!-- end row -->
                 <div class="text-end mb-3">
                     <button type="submit" class="btn btn-success w-sm">Submit</button>
+                    {{-- <button type="button" onclick="console.log(new FormData(this.form));">Test Form</button> --}}
                 </div>
             </form>
         </div>
     </div>
 @endsection
+@push('scripts')
+    <script>
+        @once
+        let myEditor;
+        ClassicEditor.create(document.querySelector('#description'))
+            .then(editor => {
+                myEditor = editor;
+            });
+
+        document.querySelector('#product-form').addEventListener('submit', function() {
+            document.querySelector('#description').value = myEditor.getData();
+        });
+        @endonce
+    </script>
+    <script>
+        const input = document.getElementById("gallery");
+        const dropzoneMock = document.getElementById("dropzone-mock");
+        const previewContainer = document.getElementById("preview-container");
+
+        // Khi click vùng dropzone -> mở file chọn
+        dropzoneMock.addEventListener("click", () => input.click());
+
+        // Render preview khi chọn file
+        input.addEventListener("change", () => {
+            previewContainer.innerHTML = ""; // clear cũ
+
+            Array.from(input.files).forEach((file, index) => {
+                if (!file.type.startsWith("image/")) return; // chỉ nhận ảnh
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const wrapper = document.createElement("div");
+                    wrapper.classList.add("position-relative");
+                    wrapper.style.width = "100px";
+                    wrapper.style.height = "100px";
+
+                    wrapper.innerHTML = `
+                    <img src="${e.target.result}" class="img-fluid rounded" style="width:100%;height:100%;object-fit:cover;">
+                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-btn" data-index="${index}">×</button>
+                `;
+
+                    previewContainer.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Xóa ảnh khỏi preview + input.files
+        previewContainer.addEventListener("click", (e) => {
+            if (e.target.classList.contains("remove-btn")) {
+                const index = e.target.getAttribute("data-index");
+
+                // Tạo lại FileList trừ file bị xóa
+                const dt = new DataTransfer();
+                Array.from(input.files).forEach((file, i) => {
+                    if (i != index) dt.items.add(file);
+                });
+                input.files = dt.files;
+
+                // Render lại preview
+                input.dispatchEvent(new Event("change"));
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let specIndex = 1;
+
+            // nút thêm
+            document.getElementById('add-spec').addEventListener('click', function() {
+                let tbody = document.querySelector('#spec-table tbody');
+                let row = document.createElement('tr');
+
+                row.innerHTML = `
+                <td><input type="text" name="specs[${specIndex}][name]" class="form-control"></td>
+                <td><input type="text" name="specs[${specIndex}][value]" class="form-control"></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm btn-remove">Xóa</button>
+                </td>
+            `;
+                tbody.appendChild(row);
+                specIndex++;
+            });
+
+            // nút xóa (event delegation)
+            document.querySelector('#spec-table').addEventListener('click', function(e) {
+                if (e.target.classList.contains('btn-remove')) {
+                    e.target.closest('tr').remove();
+                }
+            });
+        });
+    </script>
+@endpush
