@@ -36,29 +36,39 @@ class ProductController extends Controller
     {
         try {
             $data = $request->validated();
+            // dd($request->all()); 
             // Upload thumbnail
             if ($request->hasFile('thumbnail')) {
                 $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
             }
-
-            // Upload gallery
+            $galleryPaths = [];
             if ($request->hasFile('gallery')) {
-                $galleryPaths = [];
-                foreach ($request->file('gallery') as $image) {
-                    $galleryPaths[] = $image->store('products/gallery', 'public');
+                foreach ($request->file('gallery') as $file) {
+                    $path = $file->store('products/gallery', 'public'); // lưu vào storage/app/public/products
+                    $galleryPaths[] = $path;
                 }
-                $data['gallery'] = $galleryPaths;
             }
+            // Upload gallery
+            $data['gallery'] = json_encode($galleryPaths);
 
             // Slug
             $data['slug'] = Str::slug($data['name']);
-            dd($data);
-            Product::create($data);
-
+            // dd($data['gallery']);
+            $product = Product::create($data);
+            if ($request->has('specs')) {
+                foreach ($request->specs as $spec) {
+                    if (!empty($spec['name']) && !empty($spec['value'])) {
+                        $product->specs()->create([
+                            'spec_name'  => $spec['name'],
+                            'spec_value' => $spec['value'],
+                        ]);
+                    }
+                }
+            }
             return redirect()->route('admin.products.index')->with('success', 'Thêm sản phẩm thành công');
         } catch (\Throwable $th) {
             //throw $th;
-            return back()->with('errors', 'Không thể thêm sản phẩm: ' . $th->getMessage());
+            return back()->with('error', 'Không thể thêm sản phẩm: ' . $th->getMessage());
         }
     }
 
@@ -92,5 +102,14 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function uploadTemp(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            $path = $request->file('file')->store('products/gallery', 'public');
+            // dd($path);
+            return response()->json(['path' => $path]);
+        }
+        return response()->json(['error' => 'No file uploaded'], 400);
     }
 }

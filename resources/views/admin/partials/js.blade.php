@@ -46,20 +46,6 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            let checkEditor = setInterval(function() {
-                if (window.ClassicEditor && document.querySelector('#ckeditor-classic').ckeditorInstance) {
-                    clearInterval(checkEditor);
-
-                    // Lấy instance từ theme
-                    let editor = document.querySelector('#ckeditor-classic').ckeditorInstance;
-
-                    // Đồng bộ trước khi submit
-                    document.querySelector('form').addEventListener('submit', function() {
-                        document.querySelector('#description-hidden').value = editor.getData();
-                    });
-                }
-            }, 300);
-
             function handleAction(btnSelector, title, message, icon, iconColor, confirmText, confirmClass) {
                 document.querySelectorAll(btnSelector).forEach(function(btn) {
                     btn.addEventListener('click', function(e) {

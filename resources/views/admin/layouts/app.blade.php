@@ -74,6 +74,7 @@
     <!-- END layout-wrapper -->
 
     @include('admin.partials.js')
+    @stack('scripts')
 </body>
 
 </html>
