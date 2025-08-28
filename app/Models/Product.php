@@ -19,7 +19,7 @@ class Product extends Model
         'status'
     ];
     protected $casts = [
-        'gallery' => 'array', // Lưu và đọc gallery dạng array
+        'gallery' => 'array',
         'default_price' => 'decimal:2'
     ];
 
