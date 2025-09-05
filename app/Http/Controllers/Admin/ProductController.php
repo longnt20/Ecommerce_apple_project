@@ -183,6 +183,36 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $product = Product::findOrFail($id);
+            $product->delete();
+            return redirect()->route('admin.products.index')->with('success', 'Đã chuyển vào thùng rác!');
+        } catch (\Throwable $th) {
+            return back()->with('error', 'Không thể xóa sản phẩm: ' . $th->getMessage());
+        }
+    }
+    public function trash()
+    {
+        $productDeleted = Product::onlyTrashed()->latest('id')->paginate(10);
+        return view('admin.products.trash', compact('productDeleted'));
+    }
+    public function restore(string $id)
+    {
+        try {
+            $product = Product::onlyTrashed()->findOrFail($id);
+            $product->restore();
+            return redirect()->route('admin.products.trash')->with('success', 'Khôi phục sản phẩm thành công');
+        } catch (\Throwable $th) {
+            return back()->with('error', 'Không thể khôi phục sản phẩm: ' . $th->getMessage());
+        }
+    }
+    public function forceDelete(string $id){
+        try {
+            $product = Product::onlyTrashed()->findOrFail($id);
+            $product->forceDelete();
+            return redirect()->route('admin.products.trash')->with('success', 'Xóa cứng sản phẩm thành công');
+        } catch (\Throwable $th) {
+            return back()->with('error', 'Không thể xóa cứng sản phẩm: ' . $th->getMessage());
+        }
     }
 }
