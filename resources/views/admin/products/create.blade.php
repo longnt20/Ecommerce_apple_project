@@ -43,8 +43,8 @@
                                         value="{{ old('default_price') }}" placeholder="Nhập giá sản phẩm">
                                 </div>
                                 <div>
-                                    <label>Mô tả sản phẩm</label>
-                                    <textarea name="description" id="description" hidden>{{ old('description') }}</textarea>
+                                    <label>Mô tả ngắn sản phẩm</label>
+                                    <textarea class="form-control" name="short_description" rows="3">{{ old('short_description') }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -110,8 +110,8 @@
                                                         </div>
                                                     </div>
                                                 </label>
-                                                <input class="form-control d-none" value=""
-                                                    id="product-image-input" type="file" name="thumbnail"
+                                                <input class="form-control d-none" value="" id="product-image-input"
+                                                    type="file" name="thumbnail"
                                                     accept="image/png, image/gif, image/jpeg">
                                             </div>
                                             <div class="avatar-lg">
@@ -124,7 +124,7 @@
                                 </div>
                                 <div>
                                     <h5 class="fs-14 mb-1">Bộ sưu tập ảnh</h5>
-                                    <input class="form-control" type="file" id="gallery" name="gallery[]" multiple>
+                                    <input hidden class="form-control" type="file" id="gallery" name="gallery[]" multiple>
                                     <!-- Nút bấm giống Dropzone -->
                                     <div id="dropzone-mock" class="border border-2 rounded p-4 text-center"
                                         style="cursor: pointer;">
@@ -139,7 +139,7 @@
                             </div>
 
                         </div>
-                                                <div class="card" style="border-width: 2px;">
+                        <div class="card" style="border-width: 2px;">
                             <div class="card-header" style="background-color:aliceblue">
                                 <h5 class="card-title mb-0">Xuất bản</h5>
                             </div>
@@ -181,19 +181,21 @@
                         </div>
                         <!-- end card -->
 
-                        <div class="card" style="border-width: 2px;">
-                            <div class="card-header" style="background-color:aliceblue">
-                                <h5 class="card-title mb-0">Mô tả ngắn</h5>
-                            </div>
-                            <div class="card-body">
-                                <textarea class="form-control" name="short_description" rows="3"></textarea>
-                            </div>
-                            <!-- end card body -->
-                        </div>
                         <!-- end card -->
 
                     </div>
                     <!-- end col -->
+                    <div>
+                        <div class="card" style="border-width: 2px;">
+                        <div class="card-header" style="background-color:aliceblue">
+                            <h5 class="card-title mb-0">Mô tả sản phẩm</h5>
+                        </div>
+                        <div class="card-body">
+                            <textarea name="description" id="description" hidden></textarea>
+                        </div>
+                        <!-- end card body -->
+                    </div>
+                    </div>
                 </div>
                 <!-- end row -->
                 <div class="text-end mb-3">

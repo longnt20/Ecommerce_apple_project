@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Danh sách sản phẩm')
+@section('title', 'Danh sách sản phẩm đã xóa')
 @section('content')
     <div class="row">
         <div class="col-12">
@@ -9,7 +9,7 @@
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lí sản phẩm</a></li>
-                        <li class="breadcrumb-item">Danh sách sản phẩm</li>
+                        <li class="breadcrumb-item">Danh sách sản phẩm đã xóa</li>
                     </ol>
                 </div>
 
@@ -20,7 +20,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title mb-0">Danh sách sản phẩm</h4>
+                    <h4 class="card-title mb-0">Danh sách sản phẩm đã xóa</h4>
 
                 </div><!-- end card header -->
 
@@ -66,7 +66,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="list form-check-all">
-                                    @foreach ($products as $item)
+                                    @foreach ($productDeleted as $item)
                                         <tr>
                                             <th scope="row">
                                                 <div class="form-check">
@@ -103,33 +103,24 @@
                                             <td>
                                                 <div class="d-flex gap-1">
                                                     <div class="edit">
-                                                        <form action="{{ route('admin.products.edit', $item->id) }}"
-                                                            method="get">
+                                                        <form action="{{ route('admin.products.restore', $item->id) }}"
+                                                            method="post">
                                                             @csrf
-                                                            <button class="btn btn-sm btn-success edit-item-btn"
+                                                            @method('PATCH')
+                                                            <button class="btn btn-sm btn-success edit-item-btn btn-remove"
                                                                 data-bs-toggle="modal" data-bs-target="#showModal">
-                                                                <i class="las la-eye-dropper"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                    <div class="show">
-                                                        <form action="{{ route('admin.products.show', $item->id) }}"
-                                                            method="get">
-                                                            @csrf
-                                                            <button class="btn btn-sm btn-primary show-item-btn"
-                                                                data-bs-toggle="modal" data-bs-target="#showModal">
-                                                                <i class="las la-eye"></i>
+                                                                Khôi phục
                                                             </button>
                                                         </form>
                                                     </div>
                                                     <div class="remove">
                                                         <form method="POST"
-                                                            action="{{ route('admin.products.destroy', $item->id) }}"
+                                                            action="{{ route('admin.products.force-delete', $item->id) }}"
                                                             class="d-inline delete-form">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="button"
-                                                                class="btn btn-sm btn-danger remove-item-btn btn-delete"
+                                                                class="btn btn-sm btn-danger remove-item-btn btn-forcedelete"
                                                                 data-name="{{ $item->name }}">
                                                                 <i class="ri-delete-bin-2-line"></i>
                                                             </button>
@@ -158,25 +149,25 @@
                             <div class="pagination-wrap hstack gap-2">
 
                                 {{-- Nút Previous --}}
-                                @if ($products->onFirstPage())
+                                @if ($productDeleted->onFirstPage())
                                     <a class="page-item pagination-prev disabled" href="javascript:void(0);">Previous</a>
                                 @else
                                     <a class="page-item pagination-prev"
-                                        href="{{ $products->previousPageUrl() }}">Previous</a>
+                                        href="{{ $productDeleted->previousPageUrl() }}">Previous</a>
                                 @endif
 
                                 {{-- Các số trang --}}
                                 <ul class="pagination listjs-pagination mb-0">
-                                    @foreach ($products->getUrlRange(1, $products->lastPage()) as $page => $url)
-                                        <li class="page-item {{ $page == $products->currentPage() ? 'active' : '' }}">
+                                    @foreach ($productDeleted->getUrlRange(1, $productDeleted->lastPage()) as $page => $url)
+                                        <li class="page-item {{ $page == $productDeleted->currentPage() ? 'active' : '' }}">
                                             <a class="page-link" href="{{ $url }}">{{ $page }}</a>
                                         </li>
                                     @endforeach
                                 </ul>
 
                                 {{-- Nút Next --}}
-                                @if ($products->hasMorePages())
-                                    <a class="page-item pagination-next" href="{{ $products->nextPageUrl() }}">Next</a>
+                                @if ($productDeleted->hasMorePages())
+                                    <a class="page-item pagination-next" href="{{ $productDeleted->nextPageUrl() }}">Next</a>
                                 @else
                                     <a class="page-item pagination-next disabled" href="javascript:void(0);">Next</a>
                                 @endif
