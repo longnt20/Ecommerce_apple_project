@@ -1,30 +1,4 @@
 <template>
-  <!-- User Button -->
-  <button class="user-button" @click="openModal">
-    <UserCircle2 :size="20" />
-    <span class="user-label">{{ auth.isLoggedIn ? auth.user?.name : 'Đăng nhập' }}</span>
-  </button>
-  <!-- User Menu Dropdown -->
-<Transition name="fade">
-  <div
-    v-if="auth.isLoggedIn && showUserMenu"
-    class="user-dropdown"
-    @click.stop
-  >
-    <div class="user-info">
-     <strong>{{ auth.user?.name }}</strong>
-    <span class="email">{{ auth.user?.email }}</span>
-    </div>
-
-    <router-link to="/profile" class="menu-item">Tài khoản của tôi</router-link>
-    <router-link to="/orders" class="menu-item">Đơn mua</router-link>
-
-    <button class="menu-item logout" @click="logout">
-      Đăng xuất
-    </button>
-  </div>
-</Transition>
-
   <!-- Auth Modal -->
   <Teleport to="body">
     <Transition name="modal">
@@ -113,7 +87,7 @@
               </div>
 
               <div class="social-login">
-                <a class="social-btn google" href="/api/auth/google/redirect">
+                <a class="social-btn google" href="http://127.0.0.1:8000/api/auth/google/redirect">
                   <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" width="20" />
                   <span>Đăng nhập với Google</span>
                 </a>
@@ -162,9 +136,8 @@
                     id="register-password"
                     v-model="registerForm.password"
                     :type="showPassword ? 'text' : 'password'"
-                    placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+                    placeholder="Nhập mật khẩu"
                     required
-                    minlength="6"
                   />
                   <button
                     type="button"
@@ -185,7 +158,7 @@
                     id="register-confirm"
                     v-model="registerForm.confirmPassword"
                     :type="showPassword ? 'text' : 'password'"
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder="Xác nhận mật khẩu"
                     required
                   />
                 </div>
@@ -193,15 +166,12 @@
 
               <div class="form-options">
                 <label class="checkbox-wrapper">
-                  <input type="checkbox" v-model="agreeTerms" required />
-                  <span>
-                    Tôi đồng ý với 
-                    <a href="#" @click.prevent>Điều khoản sử dụng</a>
-                  </span>
+                  <input type="checkbox" v-model="agreeTerms" />
+                  <span>Tôi đồng ý với điều khoản sử dụng</span>
                 </label>
               </div>
 
-              <button type="submit" class="submit-btn" :disabled="isLoading">
+              <button type="submit" class="submit-btn" :disabled="isLoading || !agreeTerms">
                 <Loader2 v-if="isLoading" :size="18" class="spinner" />
                 <span>{{ isLoading ? 'Đang xử lý...' : 'Đăng ký' }}</span>
               </button>
@@ -214,133 +184,94 @@
 </template>
 
 <script setup>
+import { ref, reactive } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { toast } from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
 import { 
-  UserCircle2, X, Mail, Lock, Eye, EyeOff, User, Loader2 
+  X, Mail, Lock, Eye, EyeOff, User, Loader2 
 } from 'lucide-vue-next'
-import { ref, onMounted, onUnmounted } from 'vue'
-import axios from 'axios'
-import { useAuthStore } from '../../effects/auth'
 
-const auth = useAuthStore()
-
-// Modal state
-const showModal = ref(false)
-const activeTab = ref('login')
-const showPassword = ref(false)
-const isLoading = ref(false)
-const showUserMenu = ref(false)
-
-// Form state
-const loginForm = ref({ email: '', password: '' })
-const registerForm = ref({ name: '', email: '', password: '', confirmPassword: '' })
-const rememberMe = ref(false)
-const agreeTerms = ref(false)
-
-// Open modal or menu
-const openModal = () => {
-  if (auth.isLoggedIn) {
-    showUserMenu.value = !showUserMenu.value
-  } else {
-    showModal.value = true
-    document.body.style.overflow = 'hidden'
+const props = defineProps({
+  showModal: {
+    type: Boolean,
+    default: false
   }
-}
-
-// Fetch user when component loads
-onMounted(() => {
-  auth.fetchUser()
 })
 
-// Close dropdown when click outside
-const closeUserMenu = (e) => {
-  if (!e.target.closest('.user-button') && !e.target.closest('.user-dropdown')) {
-    showUserMenu.value = false
-  }
-}
+const emit = defineEmits(['close', 'success'])
 
-onMounted(() => document.addEventListener('click', closeUserMenu))
-onUnmounted(() => document.removeEventListener('click', closeUserMenu))
+const auth = useAuthStore()
+const activeTab = ref('login')
+const showPassword = ref(false)
+const rememberMe = ref(false)
+const agreeTerms = ref(false)
+const isLoading = ref(false)
 
-// Close modal
+const loginForm = reactive({
+  email: '',
+  password: ''
+})
+
+const registerForm = reactive({
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: ''
+})
+
 const closeModal = () => {
-  showModal.value = false
-  document.body.style.overflow = ''
-  resetForms()
+  emit('close')
 }
 
-const resetForms = () => {
-  loginForm.value = { email: '', password: '' }
-  registerForm.value = { name: '', email: '', password: '', confirmPassword: '' }
-  showPassword.value = false
-  agreeTerms.value = false
-}
-
-// Login
 const handleLogin = async () => {
+  if (!loginForm.email || !loginForm.password) {
+    toast.error('Vui lòng nhập đầy đủ thông tin!')
+    return
+  }
+
   isLoading.value = true
   try {
-    await auth.login(loginForm.value.email, loginForm.value.password)
+    await auth.login(loginForm.email, loginForm.password)
+    toast.success('Đăng nhập thành công!')
+    emit('success')
     closeModal()
-  } catch (err) {
-    alert("Sai tài khoản hoặc mật khẩu")
+  } catch (error) {
+    toast.error('Đăng nhập thất bại!')
   } finally {
     isLoading.value = false
   }
 }
 
-// Register
 const handleRegister = async () => {
-  if (registerForm.value.password !== registerForm.value.confirmPassword) {
-    return alert("Mật khẩu không khớp!")
+  if (registerForm.password !== registerForm.confirmPassword) {
+    toast.error('Mật khẩu xác nhận không khớp!')
+    return
+  }
+
+  if (!agreeTerms.value) {
+    toast.error('Vui lòng đồng ý điều khoản sử dụng!')
+    return
   }
 
   isLoading.value = true
   try {
-    await auth.register(
-      registerForm.value.name,
-      registerForm.value.email,
-      registerForm.value.password
-    )
-
-    alert("Đăng ký thành công! Hãy đăng nhập.")
+    await auth.register(registerForm.name, registerForm.email, registerForm.password)
+    toast.success('Đăng ký thành công! Vui lòng đăng nhập.')
     activeTab.value = 'login'
-    resetForms()
+  } catch (error) {
+    toast.error('Đăng ký thất bại!')
   } finally {
     isLoading.value = false
   }
 }
 
-const logout = () => {
-  auth.logout()
-  showUserMenu.value = false
+const handleForgotPassword = () => {
+  toast.info('Tính năng đang phát triển!')
 }
-
 </script>
 
 <style scoped>
-/* User Button */
-.user-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 8px;
-  color: #333;
-}
-
-.user-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.user-label {
-  font-size: 14px;
-  font-weight: 500;
-}
-
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -437,114 +368,99 @@ const logout = () => {
 }
 
 .form-group label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #333;
 }
 
 .input-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: #ff4d30;
 }
 
 .input-icon {
   position: absolute;
   left: 12px;
-  color: #999;
-}
-
-.input-wrapper input {
-  width: 100%;
-  padding: 10px 12px 10px 38px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.input-wrapper input:focus {
-  outline: none;
-  border-color: #ef3343;
-  box-shadow: 0 0 0 3px rgba(239, 51, 67, 0.1);
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
 }
 
 .toggle-password {
   position: absolute;
   right: 12px;
-  background: transparent;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
   border: none;
-  padding: 4px;
   cursor: pointer;
-  color: #999;
-  transition: color 0.2s;
+  color: #666;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
 }
 
 .toggle-password:hover {
-  color: #333;
+  background: #f5f5f5;
 }
 
-/* Form Options */
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 14px;
 }
 
 .checkbox-wrapper {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #666;
+  gap: 8px;
   cursor: pointer;
-}
-
-.checkbox-wrapper input {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.checkbox-wrapper a {
-  color: #ef3343;
-  text-decoration: none;
-}
-
-.checkbox-wrapper a:hover {
-  text-decoration: underline;
+  font-size: 14px;
 }
 
 .forgot-link {
-  font-size: 13px;
-  color: #ef3343;
+  color: #ff4d30;
   text-decoration: none;
+  font-size: 14px;
+  transition: opacity 0.2s;
 }
 
 .forgot-link:hover {
-  text-decoration: underline;
+  opacity: 0.8;
 }
 
-/* Submit Button */
 .submit-btn {
-  padding: 12px;
-  background: #ef3343;
+  background: #ff4d30;
   color: white;
   border: none;
+  padding: 12px;
   border-radius: 8px;
-  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: background 0.2s;
+  font-size: 15px;
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #d62b3a;
-  transform: translateY(-1px);
+  background: #e6392c;
 }
 
 .submit-btn:disabled {
@@ -552,20 +468,10 @@ const logout = () => {
   cursor: not-allowed;
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Divider */
 .divider {
-  position: relative;
   text-align: center;
-  margin: 20px 0;
+  margin: 16px 0;
+  position: relative;
 }
 
 .divider::before {
@@ -575,22 +481,20 @@ const logout = () => {
   left: 0;
   right: 0;
   height: 1px;
-  background: #e0e0e0;
+  background: #e5e5e5;
 }
 
 .divider span {
-  position: relative;
   background: white;
-  padding: 0 12px;
-  font-size: 13px;
-  color: #999;
+  padding: 0 16px;
+  color: #666;
+  font-size: 14px;
 }
 
-/* Social Login */
 .social-login {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .social-btn {
@@ -598,26 +502,34 @@ const logout = () => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  background: white;
-  font-size: 14px;
-  font-weight: 500;
+  text-decoration: none;
   color: #333;
-  cursor: pointer;
+  font-weight: 500;
   transition: all 0.2s;
+  font-size: 14px;
 }
 
 .social-btn:hover {
   background: #f8f9fa;
-  transform: translateY(-1px);
 }
 
-/* Modal Animations */
+.social-btn.facebook {
+  background: #1877f2;
+  color: white;
+  border-color: #1877f2;
+}
+
+.social-btn.facebook:hover {
+  background: #166fe5;
+}
+
+/* Modal Transitions */
 .modal-enter-active,
 .modal-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s;
 }
 
 .modal-enter-from,
@@ -632,169 +544,39 @@ const logout = () => {
 
 /* Responsive */
 @media (max-width: 480px) {
-  .user-label {
-    display: none;
+  .modal-overlay {
+    padding: 10px;
   }
   
   .modal-container {
     max-width: 100%;
     margin: 10px;
   }
-  
-  .modal-body {
-    padding: 20px;
-  }
 }
 
-/* Dark mode */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .user-button {
-    color: #f0f0f0;
-  }
-  
-  .user-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
   .modal-container {
     background: #1e1e1e;
-  }
-  
-  .modal-close {
-    color: #aaa;
-  }
-  
-  .modal-close:hover {
-    background: #2a2a2a;
-    color: #fff;
   }
   
   .tab-switcher {
     background: #2a2a2a;
   }
   
-  .tab-btn {
-    color: #aaa;
-  }
-  
-  .tab-btn.active {
-    background: #333;
-    color: #fff;
-  }
-  
   .form-group label {
-    color: #f0f0f0;
+    color: #fff;
   }
   
   .input-wrapper input {
     background: #2a2a2a;
     border-color: #444;
-    color: #f0f0f0;
-  }
-  
-  .input-wrapper input:focus {
-    border-color: #ef3343;
+    color: #fff;
   }
   
   .divider span {
     background: #1e1e1e;
-  }
-  
-  .social-btn {
-    background: #2a2a2a;
-    border-color: #444;
-    color: #f0f0f0;
-  }
-  
-  .social-btn:hover {
-    background: #333;
+    color: #fff;
   }
 }
-/* === USER DROPDOWN MENU === */
-.user-dropdown {
-  position: absolute;
-  top: 120px;
-  right: 180px;
-  width: 240px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  padding: 12px 0;
-  animation: fadeIn 0.18s ease-out;
-  overflow: hidden;
-  border: 1px solid #eee;
-  z-index: 5;
-}
-
-/* Header user info */
-.user-dropdown .user-info {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f1f1f1;
-}
-
-.user-dropdown .user-info strong {
-  font-size: 15px;
-  color: #222;
-  display: block;
-  margin-bottom: 2px;
-}
-
-.user-dropdown .user-info .email {
-  font-size: 12px;
-  color: #888;
-}
-
-/* Menu items */
-.menu-item {
-  padding: 12px 18px;
-  display: block;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #333;
-  font-size: 14px;
-  user-select: none;
-  border: none;      /* <== FIX */
-  outline: none;     /* <== FIX */
-  background: none;
-  width: 100%;
-  text-align: left;
-}
-
-.menu-item:hover {
-  background: #f8f9fa;
-}
-
-/* Nút đăng xuất */
-.logout {
-  color: #e63946;
-  font-weight: 500;
-}
-
-.logout:hover {
-  background: #ffe8e8 !important;
-  color: #d62828;
-}
-
-/* Xóa focus viền đen của button */
-.menu-item:focus,
-.logout:focus,
-button:focus {
-  outline: none !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-/* Fade animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
 </style>

@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await authService.getUser()
 
-        this.user = res.data
+        this.user = res.data.user  // Backend trả về user trong object
         this.isLoggedIn = true
       } catch (err) {
         this.logout()

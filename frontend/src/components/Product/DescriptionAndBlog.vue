@@ -26,7 +26,7 @@
       <button 
         v-if="showToggle" 
         class="more-btn" 
-        @click="expanded = !expanded"
+        @click="toggleExpanded"
       >
         {{ expanded ? "Thu gọn" : "Xem thêm" }}
       </button>
@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 
 const props = defineProps({
   product: {
@@ -68,26 +68,51 @@ const expanded = ref(false);     // Xem thêm / Thu gọn CKEditor
 const showToggle = ref(false);   // Hiện nút Xem thêm nếu nội dung cao
 const contentSection = ref(null);
 const newsRight = ref(null);
+
 const toggleContent = () => {
   open.value = !open.value;
 };
-// Kiểm tra chiều cao CKEditor để show nút Xem thêm
-onMounted(() => {
-  nextTick(() => {
-    // tạm bật full để đo
-    const wasExpanded = expanded.value
-    expanded.value = true
+
+const toggleExpanded = () => {
+  expanded.value = !expanded.value
+  
+  if (contentSection.value) {
+    if (expanded.value) {
+      // Mở rộng
+      contentSection.value.style.maxHeight = 'none'
+      contentSection.value.classList.remove('collapsed')
+    } else {
+      // Thu gọn
+      contentSection.value.style.maxHeight = `${props.maxHeight}px`
+      contentSection.value.classList.add('collapsed')
+    }
+  }
+};
+
+// Watch product changes
+watch(() => props.product, (newProduct) => {
+  console.log('Product changed:', newProduct)
+  
+  if (newProduct) {
+    showToggle.value = true
+    console.log('Show toggle: has product')
     
+    // Đợi v-html render xong
     nextTick(() => {
-      const height = contentSection.value?.scrollHeight || 0
-
-      if (height > props.maxHeight) showToggle.value = true
-
-      // thu lại trạng thái ban đầu
-      expanded.value = wasExpanded
+      setTimeout(() => {
+        if (contentSection.value) {
+          console.log('Content section found:', contentSection.value)
+          
+          // Mặc định thu gọn
+          contentSection.value.style.maxHeight = `${props.maxHeight}px`
+          contentSection.value.classList.add('collapsed')
+        }
+      }, 100)
     })
-  })
-})
+  } else {
+    showToggle.value = false
+  }
+}, { immediate: true })
 
 
 
@@ -151,6 +176,7 @@ onMounted(() => {
 .collapse-btn span.rotated {
   transform: rotate(180deg);
 }
+
 .content-section {
   overflow: hidden;
   transition: max-height 0.3s ease;
@@ -159,7 +185,9 @@ onMounted(() => {
   padding: 10px;
   background: #fff;
   margin-top: 20px;
+  max-height: none; /* Default: không giới hạn */
 }
+
 .content-section.collapsed {
   max-height: 300px; /* collapsed height */
   position: relative;
@@ -247,100 +275,49 @@ onMounted(() => {
   font-size: 15px;
   line-height: 1.4;
 }
-</style>
-<style>
-.ck-content img {
-  max-width: 100% !important;
-  height: auto !important;
-  display: block;
-  margin: 0 auto;
-}
 
-.ck-content {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-/* Table cơ bản */
-.ck-content table {
-  width: 100%;          /* table chiếm toàn bộ container */
-  border-collapse: collapse;
-  margin-bottom: 16px;
-  table-layout: auto;   /* tự co theo nội dung, nếu muốn fix width dùng table-layout: fixed; */
-}
-
-/* Table cell */
-.ck-content th,
-.ck-content td {
-  border: 1px solid #ddd;   /* viền nhẹ */
-  padding: 8px 12px;
-  text-align: left;
-}
-
-/* Header table */
-.ck-content th {
-  background-color: #f5f5f5;
-  font-weight: 600;
-}
-
-/* Table hover */
-.ck-content tr:hover {
-  background-color: #f1f3f4;
-}
-
-/* Responsive: cuộn ngang nếu table quá rộng */
+/* Responsive */
 @media (max-width: 768px) {
-  .ck-content table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
+  .product-wrapper {
+    flex-direction: column;
+  }
+  
+  .left, .right {
+    width: 100%;
+  }
+  
+  .right {
+    position: static;
+    margin-top: 20px;
   }
 }
 
-/* Optional: căn giữa table */
-.ck-content table.center {
-  margin-left: auto;
-  margin-right: auto;
+/* Desktop: Make sidebar scroll independently */
+@media (min-width: 769px) {
+  .right {
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  
+  .right::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .right::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  .right::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  .right::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
 }
-.product-wrapper {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
-
-/* LEFT */
-.left {
-  flex: 2;
-}
-
-/* Collapse / expand content */
-
-
-/* CKEditor content */
-.ck-content img {
-  max-width: 100% !important;
-  height: auto !important;
-  display: block;
-  margin: 0 auto;
-}
-
-/* RIGHT */
-.right {
-  flex: 1;
-  position: sticky;
-  top: 20px; /* scroll theo page */
-  align-self: flex-start;
-}
-
-/* Tin tức */
-.news-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.news-item img {
-  width: 100%;
-  border-radius: 6px;
-}
-
 </style>

@@ -11,7 +11,9 @@ import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import { useLoadingStore } from '@/stores/loading';
 import { useCartStore } from '@/stores/cart';
+import { useAuthStore } from '@/stores/auth';
 const loading = useLoadingStore()
+const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -21,6 +23,12 @@ onMounted(async () => {
 
   if (token) {
     localStorage.setItem('token', token)
+    auth.token = token
+    auth.isLoggedIn = true
+    
+    // Load user data
+    await auth.fetchUser()
+    
     toast.success('Đăng nhập Google thành công!')
 
     const cart = useCartStore()

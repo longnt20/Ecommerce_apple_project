@@ -178,6 +178,19 @@ class CheckoutController extends Controller
             "vnp_TxnRef"    => $txnRef
         ];
 
+        // Debug: Check data before hash
+        \Log::info('VNPay Input Data:', $inputData);
+        
+        // Debug: Check individual config values
+        \Log::info('VNPay Config Check:', [
+            'tmn_code' => $tmnCode,
+            'tmn_code_empty' => empty($tmnCode),
+            'hash_secret_empty' => empty($hashSecret),
+            'hash_secret_length' => strlen($hashSecret),
+            'vnp_url' => $vnpUrl,
+            'return_url' => $returnUrl
+        ]);
+
         ksort($inputData);
 
         $hashData = http_build_query($inputData);
@@ -205,6 +218,7 @@ class CheckoutController extends Controller
             ]);
         }
 
-        return redirect("http://localhost:3000/payment-success?order_id={$orderId}&amount={$orderAmount}");
+        $returnUrl = config('vnpay.vnp_frontend_return_url', 'http://localhost:3000/payment-success');
+        return redirect("{$returnUrl}?order_id={$orderId}&amount={$orderAmount}");
     }
 }
