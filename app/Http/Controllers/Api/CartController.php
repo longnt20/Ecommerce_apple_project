@@ -48,7 +48,7 @@ class CartController extends Controller
     {
         $request->validate([
             "product_id" => "required|exists:products,id",
-            "product_variant_id" => "nullable|exists:product_variants,id",
+            "variant_id" => "nullable|exists:product_variants,id",
             "quantity" => "required|integer|min:1"
         ]);
 
@@ -57,11 +57,11 @@ class CartController extends Controller
         // kiểm tra trùng sản phẩm + variant → tăng số lượng
         $item = $cart->items()
             ->where("product_id", $request->product_id)
-            ->where("product_variant_id", $request->product_variant_id)
+            ->where("product_variant_id", $request->variant_id)
             ->first();
 
-        $price = $request->product_variant_id
-            ? ProductVariant::find($request->product_variant_id)->cost_price
+        $price = $request->variant_id
+            ? ProductVariant::find($request->variant_id)->cost_price
             : Product::find($request->product_id)->default_price;
 
         if ($item) {
@@ -70,7 +70,7 @@ class CartController extends Controller
         } else {
             $cart->items()->create([
                 "product_id" => $request->product_id,
-                "product_variant_id" => $request->product_variant_id,
+                "product_variant_id" => $request->variant_id,
                 "quantity" => $request->quantity,
                 "price_at_add" => $price
             ]);

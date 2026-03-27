@@ -34,20 +34,20 @@ export const useCartStore = defineStore("cart", {
             }
 
             const res = await cartService.getCart();
-            this.items = res.data.items ?? [];
+            this.items = res.data.items ?? res.data.data ?? [];
         },
 
         async addToCart(productId, variantId, qty = 1) {
             try {
-                console.log("Sending:", {
+                console.log("Sending to cart:", {
                     product_id: productId,
-                    product_variant_id: variantId,
+                    variant_id: variantId,
                     quantity: qty,
                 });
 
                 const res = await cartService.addToCart(productId, qty, variantId);
 
-                this.items = res.data.data ?? [];
+                this.items = res.data.items ?? res.data.data ?? [];
             } catch (e) {
                 if (e.response) {
                     console.error("API Error:", e.response.data);

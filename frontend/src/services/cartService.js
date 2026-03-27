@@ -14,11 +14,11 @@ export const cartService = {
   },
   
   updateCartItem(itemId, quantity) {
-    return api.put(`/cart/${itemId}`, { quantity })
+    return api.put(`/cart/item/${itemId}`, { quantity })
   },
   
   removeFromCart(itemId) {
-    return api.delete(`/cart/${itemId}`)
+    return api.delete(`/cart/item/${itemId}`)
   },
   
   clearCart() {

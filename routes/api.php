@@ -56,8 +56,10 @@ Route::get('/wards/{id}', function ($id) {
 
 });
 
-// Những route cần token mới truy cập
+// VNPay Return URL (không cần auth) - đặt ở trên
+Route::get('/vnpay/return', [CheckoutController::class, 'vnpReturn']);
 
+// Những route cần token mới truy cập
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);

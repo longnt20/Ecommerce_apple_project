@@ -16,13 +16,23 @@
             </button>
         </div>
 
+        <!-- Auth Modal -->
+        <AuthModal 
+            :showModal="showAuthModal" 
+            @close="showAuthModal = false"
+            @success="handleAuthSuccess"
+        />
     </div>
 </template>
 <script setup>
 import { ref } from 'vue';
 import { useCartStore } from '@/stores/cart';
 import { useBuyNowStore } from '@/stores/buynow';
+import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+import AuthModal from '@/components/common/AuthModal.vue';
 
 const props = defineProps({
   product: {
@@ -37,18 +47,39 @@ const props = defineProps({
 
 const quantity = ref(1);
 const cart = useCartStore();
-const addToCart = async () => {
-  await cart.addToCart(props.product.id, props.selectedVariant?.id, quantity.value);
-  alert("Đã thêm vào giỏ hàng!");
+const buyNow = useBuyNowStore();
+const auth = useAuthStore();
+const router = useRouter();
+const showAuthModal = ref(false);
+
+const checkAuth = () => {
+  if (!auth.isLoggedIn) {
+    showAuthModal.value = true;
+    return false;
+  }
+  return true;
 };
 
-const router = useRouter()
+const addToCart = async () => {
+  if (!checkAuth()) return;
+  
+  if (!props.selectedVariant) {
+    return toast.error("Vui lòng chọn màu/dung lượng!");
+  }
 
-const buyNow = useBuyNowStore();
+  try {
+    await cart.addToCart(props.product.id, props.selectedVariant?.id, quantity.value);
+    toast.success("Đã thêm vào giỏ hàng!");
+  } catch (error) {
+    toast.error("Thêm vào giỏ hàng thất bại!");
+  }
+};
 
 const buyNowAction = () => {
+  if (!checkAuth()) return;
+  
   if (!props.selectedVariant) {
-    return alert("Vui lòng chọn màu/dung lượng!");
+    return toast.error("Vui lòng chọn màu/dung lượng!");
   }
 
   buyNow.set({
@@ -58,6 +89,12 @@ const buyNowAction = () => {
   });
 
   router.push("/checkout?mode=buy-now");
+};
+
+const handleAuthSuccess = () => {
+  // Auth successful, proceed with the action
+  showAuthModal.value = false;
+  // The user can now try the action again
 };
 </script>
 <style scoped>
